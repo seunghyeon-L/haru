@@ -69,18 +69,23 @@ function toast(msg) {
 }
 
 /* ---------- 상태 ---------- */
+// 안드로이드 앱 안에서는 위젯과 같은 네이티브 저장소를 쓴다.
+const native = window.HaruNative || null;
 const emptyState = () => ({ version: 1, habits: [], log: {}, objectives: [] });
 
 function load() {
   try {
-    const s = JSON.parse(localStorage.getItem(KEY));
+    const s = JSON.parse(native ? native.load() : localStorage.getItem(KEY));
     if (s && s.version === 1) return s;
   } catch { /* 처음 실행 또는 손상 */ }
   return emptyState();
 }
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(state)); }
-  catch { toast('저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.'); }
+  const json = JSON.stringify(state);
+  try {
+    if (native) native.save(json);
+    else localStorage.setItem(KEY, json);
+  } catch { toast('저장하지 못했어요. 저장 공간을 확인해 주세요.'); }
 }
 
 let state = load();
@@ -687,6 +692,7 @@ document.addEventListener('visibilitychange', () => {
 
 /* ---------- 백업 ---------- */
 function exportData() {
+  if (native) { native.exportBackup(JSON.stringify(state, null, 2), `haru-backup-${today()}.json`); return; }
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -734,6 +740,14 @@ function seedExamples() {
 }
 
 /* ---------- 시작 ---------- */
+// 위젯에서 체크한 뒤 앱으로 돌아오면 네이티브가 호출한다.
+window.haruReload = () => {
+  if (sheet.open) sheet.close();
+  state = load();
+  if (today() !== lastDay) { lastDay = today(); viewDate = null; }
+  render();
+};
+
 render();
 navigator.storage?.persist?.().catch(() => {});
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {

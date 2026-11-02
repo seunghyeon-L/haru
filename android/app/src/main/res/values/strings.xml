@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">하루</string>
+    <string name="widget_name">하루 오늘 루틴</string>
+    <string name="widget_desc">오늘 루틴을 홈 화면에서 바로 체크해요</string>
+    <string name="today">오늘</string>
+    <string name="add_in_app">앱에서 루틴을 추가해 주세요</string>
+</resources>

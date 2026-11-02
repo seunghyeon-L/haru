@@ -1,0 +1,35 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.seunghyeon.haru'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.seunghyeon.haru'
+        minSdk 31
+        targetSdk 36
+        versionCode 1
+        versionName '1.0'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // 웹앱 파일(저장소 루트)을 assets/www 로 넣는다. 웹앱을 고치면 다시 빌드만 하면 된다.
+    sourceSets {
+        main.assets.srcDirs += layout.buildDirectory.dir('generated/web').get().asFile
+    }
+}
+
+def copyWeb = tasks.register('copyWeb', Sync) {
+    from(rootProject.file('..')) {
+        include 'index.html', 'app.js', 'style.css', 'icons/**'
+    }
+    into layout.buildDirectory.dir('generated/web/www')
+}
+
+tasks.named('preBuild') { dependsOn copyWeb }
