@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- style.css 의 토큰과 맞춘다 -->
+    <color name="app_bg">#FAFAF8</color>
     <color name="bg">#FFFFFF</color>
-    <color name="text">#1D1D1F</color>
-    <color name="muted">#8A8F98</color>
-    <color name="ring">#B5B9C1</color>
-    <color name="accent">#2F7CF6</color>
+    <color name="text">#1C1C1E</color>
+    <color name="muted">#87878C</color>
+    <color name="track">#E8E8E5</color>
+    <color name="ring">#BCBCC1</color>
+    <color name="accent">#3D6BF5</color>
+    <color name="good">#2A9D61</color>
     <color name="icon_bg">#2F7CF6</color>
 </resources>

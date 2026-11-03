@@ -4,22 +4,38 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:minHeight="48dp"
+    android:minHeight="52dp"
     android:orientation="horizontal"
-    android:paddingTop="6dp"
-    android:paddingBottom="6dp">
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
 
-    <ImageView
-        android:id="@+id/check"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:importantForAccessibility="no"
-        android:src="@drawable/check_off" />
+    <FrameLayout
+        android:id="@+id/chip"
+        android:layout_width="32dp"
+        android:layout_height="32dp">
+
+        <ImageView
+            android:id="@+id/chip_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:src="@drawable/chip_bg" />
+
+        <TextView
+            android:id="@+id/chip_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -36,8 +52,30 @@
             android:id="@+id/meta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/muted"
-            android:textSize="11.5sp" />
+            android:textSize="12sp" />
     </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="26dp"
+        android:layout_height="26dp">
+
+        <ImageView
+            android:id="@+id/check"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:src="@drawable/check_ring" />
+
+        <ImageView
+            android:id="@+id/check_mark"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:src="@drawable/check_glyph"
+            android:visibility="gone" />
+    </FrameLayout>
 </LinearLayout>

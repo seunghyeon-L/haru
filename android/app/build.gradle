@@ -27,7 +27,7 @@ android {
 
 def copyWeb = tasks.register('copyWeb', Sync) {
     from(rootProject.file('..')) {
-        include 'index.html', 'app.js', 'style.css', 'icons/**'
+        include 'index.html', 'app.js', 'style.css', 'icons/**', 'fonts/**'
     }
     into layout.buildDirectory.dir('generated/web/www')
 }

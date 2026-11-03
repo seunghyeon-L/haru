@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg">#1C1C1E</color>
-    <color name="text">#F2F2F7</color>
-    <color name="muted">#8E8E93</color>
-    <color name="ring">#5C5C61</color>
-    <color name="accent">#4A90FF</color>
+    <color name="app_bg">#0F0F10</color>
+    <color name="bg">#1A1A1C</color>
+    <color name="text">#F2F2F4</color>
+    <color name="muted">#8E8E94</color>
+    <color name="track">#2E2E32</color>
+    <color name="ring">#55555B</color>
+    <color name="accent">#6B8CFF</color>
+    <color name="good">#45C27F</color>
 </resources>

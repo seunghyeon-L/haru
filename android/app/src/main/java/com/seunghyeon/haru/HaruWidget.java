@@ -7,9 +7,11 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.StrikethroughSpan;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.json.JSONObject;
@@ -67,7 +69,10 @@ public class HaruWidget extends AppWidgetProvider {
 
         RemoteViews rv = new RemoteViews(pkg, R.layout.widget);
         rv.setTextViewText(R.id.date, today.getMonthValue() + "월 " + today.getDayOfMonth() + "일 " + WEEK[HaruStore.jsDow(today)] + "요일");
-        rv.setTextViewText(R.id.progress, items.isEmpty() ? "" : done + " / " + items.size());
+        boolean complete = !items.isEmpty() && done == items.size();
+        rv.setTextViewText(R.id.progress, items.isEmpty() ? "" : done + "/" + items.size());
+        rv.setTextColor(R.id.progress, ctx.getColor(complete ? R.color.good : R.color.text));
+        rv.setImageViewBitmap(R.id.ring, ring(ctx, items.isEmpty() ? 0f : (float) done / items.size(), complete));
         rv.setTextViewText(R.id.empty, HaruStore.hasHabits(s) ? "오늘은 예정된 루틴이 없어요" : "앱에서 루틴을 추가해 주세요");
 
         Intent open = new Intent(ctx, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -81,17 +86,23 @@ public class HaruWidget extends AppWidgetProvider {
                 .setViewTypeCount(1);
         for (HaruStore.Item it : items) {
             RemoteViews row = new RemoteViews(pkg, R.layout.widget_item);
-            row.setImageViewResource(R.id.check, it.done ? R.drawable.check_on : R.drawable.check_off);
-            CharSequence title = it.title;
-            if (it.done) {
-                SpannableString span = new SpannableString(it.title);
-                span.setSpan(new StrikethroughSpan(), 0, span.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                title = span;
-            }
-            row.setTextViewText(R.id.title, title);
-            row.setFloat(R.id.title, "setAlpha", it.done ? 0.45f : 1f);
-            String meta = HaruStore.SLOT_LABELS[it.slot] + (it.streak > 0 ? "  ·  🔥 " + it.streak + "일" : "");
+            // 아이콘 칩: 루틴 색 15% 바탕 + 이모지/첫 글자 (앱의 chip-icon 과 같음)
+            row.setInt(R.id.chip_bg, "setColorFilter", it.color);
+            row.setInt(R.id.chip_bg, "setImageAlpha", 38);
+            row.setTextViewText(R.id.chip_text, it.icon);
+            row.setTextColor(R.id.chip_text, it.color);
+            row.setFloat(R.id.chip, "setAlpha", it.done ? 0.45f : 1f);
+            // 체크: 안 했으면 루틴 색 테두리, 했으면 루틴 색으로 채우고 흰 체크
+            row.setImageViewResource(R.id.check, it.done ? R.drawable.check_fill : R.drawable.check_ring);
+            row.setInt(R.id.check, "setColorFilter", it.color);
+            row.setInt(R.id.check, "setImageAlpha", it.done ? 255 : 150);
+            row.setViewVisibility(R.id.check_mark, it.done ? View.VISIBLE : View.GONE);
+            // 완료하면 취소선 대신 흐리게 (Things 3)
+            row.setTextViewText(R.id.title, it.title);
+            row.setFloat(R.id.title, "setAlpha", it.done ? 0.4f : 1f);
+            String meta = (it.streak > 0 ? "🔥 " + it.streak + "  ·  " : "") + HaruStore.SLOT_LABELS[it.slot];
             row.setTextViewText(R.id.meta, meta);
+            row.setContentDescription(R.id.row, it.title + (it.done ? ", 완료함" : ", 안 함"));
             row.setOnClickFillInIntent(R.id.row, new Intent()
                     .putExtra(EXTRA_ID, it.id)
                     .putExtra(EXTRA_DATE, today.toString()));
@@ -104,6 +115,27 @@ public class HaruWidget extends AppWidgetProvider {
         rv.setPendingIntentTemplate(R.id.list,
                 PendingIntent.getBroadcast(ctx, 1, toggle, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
         return rv;
+    }
+
+    /** 헤더의 진행 링 (앱 헤더의 링과 같은 모양) */
+    private static Bitmap ring(Context ctx, float ratio, boolean complete) {
+        float density = ctx.getResources().getDisplayMetrics().density;
+        int size = Math.round(38 * density);
+        float stroke = 3.5f * density;
+        Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(stroke);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        RectF box = new RectF(stroke / 2, stroke / 2, size - stroke / 2, size - stroke / 2);
+        p.setColor(ctx.getColor(R.color.track));
+        canvas.drawOval(box, p);
+        if (ratio > 0) {
+            p.setColor(ctx.getColor(complete ? R.color.good : R.color.accent));
+            canvas.drawArc(box, -90, 360 * ratio, false, p);
+        }
+        return bmp;
     }
 
     /** 자정이 지나면 새 날짜의 루틴으로 바꾼다. */

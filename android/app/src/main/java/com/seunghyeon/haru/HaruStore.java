@@ -2,6 +2,7 @@ package com.seunghyeon.haru;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 앱(WebView)과 위젯이 함께 쓰는 저장소.
@@ -21,6 +23,8 @@ final class HaruStore {
     private static final String KEY = "state";
     static final String[] SLOTS = {"morning", "afternoon", "evening", "anytime"};
     static final String[] SLOT_LABELS = {"아침", "오후", "저녁", "언제든"};
+    /** app.js PALETTE 와 같은 순서. 색이 없는 예전 루틴은 순서대로 받는다. */
+    static final String[] PALETTE = {"#4c7df0", "#7b6cf0", "#b062e0", "#e2659b", "#ec5b57", "#f08a3e", "#dfa42a", "#3aae73", "#1fa79f", "#6b7a90"};
 
     private HaruStore() {}
 
@@ -96,6 +100,23 @@ final class HaruStore {
         int order;
         boolean done;
         int streak;
+        int color;
+        /** 이모지 아이콘, 없으면 제목 첫 글자 */
+        String icon;
+    }
+
+    static int color(JSONObject h, int index) {
+        String c = h.optString("color", "");
+        if (!c.matches("#[0-9a-fA-F]{6}")) c = PALETTE[index % PALETTE.length];
+        return Color.parseColor(c);
+    }
+
+    static String icon(JSONObject h) {
+        String icon = h.optString("icon", "");
+        if (!icon.isEmpty()) return icon;
+        String title = h.optString("title", "").trim();
+        if (title.isEmpty()) return "·";
+        return title.substring(0, title.offsetByCodePoints(0, 1)).toUpperCase(Locale.ROOT);
     }
 
     /** 그날 예정된 루틴을 시간대 → 순서대로 */
@@ -113,6 +134,8 @@ final class HaruStore {
             it.order = h.optInt("order");
             it.done = isDone(s, it.id, d);
             it.streak = streak(s, h, d);
+            it.color = color(h, i);
+            it.icon = icon(h);
             out.add(it);
         }
         out.sort(Comparator.<Item>comparingInt(x -> x.slot).thenComparingInt(x -> x.order));
